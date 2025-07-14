@@ -1,0 +1,1315 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Glog.AI",
+          "organization": "Glog.AI",
+          "fullName": "Glog, Making software more secure",
+          "version": "1.0.0",
+          "semanticVersion": "1.0.0",
+          "informationUri": "https://www.glog.ai",
+          "rules": [
+            {
+              "id": "glog-e3021895-fed5-482b-82d8-b3f63aab940e",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe \"Detected Issue with C Function: `memcpy`\" vulnerability in C++ arises when the `memcpy` function is used improperly, potentially leading to buffer overflows. This can occur when the destination buffer is not large enough to hold the data being copied, or when the length of the data to be copied is not correctly calculated. In the provided code snippet, `memcpy(cStr, s.c_str(), s.length())`, the vulnerability may occur if `cStr` is not allocated with enough space to accommodate the contents of `s`.\n\n### General Mitigation Advice\n\n1. **Ensure Proper Buffer Size**: Always ensure that the destination buffer is large enough to hold the data being copied, including any null terminators if dealing with strings.\n2. **Use Safer Alternatives**: Consider using safer alternatives like `strncpy` or `std::copy` which provide better safety checks.\n3. **Bounds Checking**: Implement bounds checking to ensure that the length of the data being copied does not exceed the size of the destination buffer.\n\n### Source Code Fix Recommendation\n\nTo mitigate the vulnerability, ensure that `cStr` is properly allocated and use safer functions:\n\n```cpp\n#include <cstring>\n#include <string>\n#include <iostream>\n\nint main() {\n    std::string s = \"example\";\n    // Ensure cStr is large enough to hold the string and the null terminator\n    char* cStr = new char[s.length() + 1];\n    \n    // Use strncpy to prevent buffer overflow\n    std::strncpy(cStr, s.c_str(), s.length());\n    cStr[s.length()] = '\\0'; // Null-terminate the string\n\n    std::cout << cStr << std::endl;\n\n    delete[] cStr;\n    return 0;\n}\n```\n\n### Library Dependencies\n\n- `<cstring>`: Required for `std::strncpy`.\n- `<string>`: Required for `std::string`.\n- `<iostream>`: Required for input/output operations.\n\n### Relevant Resources\n\n- [OWASP Top Ten](https://owasp.org/www-project-top-ten/)\n- [OWASP Secure Coding Practices](https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/)\n\n### Common Weakness Enumeration\n\n- [CWE-120: Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')](https://cwe.mitre.org/data/definitions/120.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-bcb8fde9-f139-4106-818a-0b736852957c",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially when randomness is critical for security purposes. The `rand()` function is not suitable for cryptographic purposes because it produces predictable sequences of numbers if the seed is known or can be guessed. This can lead to vulnerabilities in applications where randomness is used for generating keys, tokens, or any other security-related data.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator (CSPRNG) instead of `rand()`. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate random numbers with better randomness properties.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand() %` with a more secure random number generation approach using the `<random>` library. Below is an example of how to replace `rand()` with a CSPRNG:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister engine\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define the range for random numbers\n    std::uniform_int_distribution<> dis(0, 99); // Example range [0, 99]\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code example, the following library is required:\n\n- `<random>`: This is part of the C++ Standard Library and does not require any additional dependencies beyond a standard C++ compiler that supports C++11 or later.\n\n### Relevant Links\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-d63b3fa2-4d4a-4058-9348-19181fe96e16",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe vulnerability \"Initiating a Shell Process: Potential Injection and Security Concern Identified\" in Python arises when user input is used to construct shell commands without proper validation or sanitization. This can lead to command injection attacks, where an attacker can execute arbitrary commands on the host system. The specific vulnerability sink in this case is the use of `os.popen(cmd).read()`, which executes the command specified by `cmd` in a subshell. If `cmd` includes unsanitized user input, it can be exploited to execute malicious commands.\n\n### General Mitigation Advice\n\n1. **Avoid Shell Execution**: Use Python's built-in libraries to perform tasks instead of executing shell commands.\n2. **Input Validation**: Validate and sanitize all user inputs to ensure they conform to expected formats and do not contain malicious content.\n3. **Use Safe Subprocess Methods**: Prefer using `subprocess.run()` with a list of arguments instead of a single string to avoid shell interpretation.\n4. **Least Privilege Principle**: Run your application with the least privileges necessary to limit the impact of a potential compromise.\n\n### Source Code Fix Recommendation\n\nReplace the use of `os.popen()` with `subprocess.run()` to avoid shell interpretation and potential injection:\n\n```python\nimport subprocess\n\n# Assume cmd is a list of command and arguments\ncmd = ['your_command', 'arg1', 'arg2']  # Replace with actual command and arguments\nresult = subprocess.run(cmd, capture_output=True, text=True)\noutput = result.stdout\n```\n\n### Library Dependencies\n\nThe code example requires the following standard library:\n\n- `subprocess`: This is a standard library in Python and does not require additional installation.\n\n### Relevant OWASP Resources\n\n- [OWASP Command Injection](https://owasp.org/www-community/attacks/Command_Injection)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')](https://cwe.mitre.org/data/definitions/78.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B605"
+                ]
+              }
+            },
+            {
+              "id": "glog-fb1db9c5-bc3a-4827-82b3-1b6cacd94f00",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially when randomness is critical for security purposes. The `rand()` function is not suitable for cryptographic purposes because it produces predictable sequences of numbers if the seed is known or can be guessed. This can lead to vulnerabilities in applications where randomness is used for generating keys, tokens, or any other security-related data.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator (CSPRNG) instead of `rand()`. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate random numbers with better randomness properties.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand() %` with a more secure random number generation approach using the `<random>` library. Below is an example of how to replace `rand()` with a CSPRNG:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister engine\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define the range for random numbers\n    std::uniform_int_distribution<> dis(0, 99); // Example range [0, 99]\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code example, the following library is required:\n\n- `<random>`: This is part of the C++ Standard Library and does not require any additional dependencies beyond a standard C++ compiler that supports C++11 or later.\n\n### Relevant Links\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-5e41892f-034e-451a-9d58-0f2efbedac8d",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially in security-sensitive applications. The `rand()` function is not suitable for cryptographic purposes because it generates predictable sequences of numbers if the seed is known. This predictability can be exploited by attackers to compromise the security of the application.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate random numbers more securely.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand()` with a more secure random number generator from the `<random>` library. Here is an example of how to do this:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister random number generator\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define a distribution range\n    std::uniform_int_distribution<> dis(1, 100);\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code example properly, the following library is required:\n\n- `<random>`: This library provides facilities for generating random numbers.\n\n### OWASP Resources\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-727b3f1a-120c-4279-b5fa-020d71264f08",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially in security-sensitive applications. The `rand()` function is not suitable for cryptographic purposes because it generates predictable sequences of numbers if the seed is known. This predictability can be exploited by attackers to compromise the security of the application.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate random numbers more securely.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand()` with a more secure random number generator from the `<random>` library. Here is an example of how to do this:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister random number generator\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define a distribution range\n    std::uniform_int_distribution<> dis(1, 100);\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code example properly, the following library is required:\n\n- `<random>`: This library provides facilities for generating random numbers.\n\n### OWASP Resources\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-4074c00e-0e2e-4317-a30c-0d496e694ec2",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially when randomness is critical for security purposes. The `rand()` function is not suitable for cryptographic purposes because it produces predictable sequences of numbers if the seed is known or can be guessed. This can lead to vulnerabilities in applications where randomness is used for generating keys, tokens, or any other security-related data.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator (CSPRNG) instead of `rand()`. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate random numbers with better randomness properties.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand() %` with a more secure random number generation approach using the `<random>` library. Below is an example of how to replace `rand()` with a CSPRNG:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister engine\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define the range for random numbers\n    std::uniform_int_distribution<> dis(0, 99); // Example range [0, 99]\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code example, the following library is required:\n\n- `<random>`: This is part of the C++ Standard Library and does not require any additional dependencies beyond a standard C++ compiler that supports C++11 or later.\n\n### Relevant Links\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-ff6e5ed6-e709-460d-ac91-2771d00d1cbe",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially in security-sensitive applications. The `rand()` function is not suitable for cryptographic purposes because it generates predictable sequences of numbers if the seed is known. This predictability can be exploited by attackers to compromise the security of the application.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate random numbers more securely.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand()` with a more secure random number generator from the `<random>` library. Here is an example of how to do this:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister random number generator\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define a distribution range\n    std::uniform_int_distribution<> dis(1, 100);\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code example properly, the following library is required:\n\n- `<random>`: This library provides facilities for generating random numbers.\n\n### OWASP Resources\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-17a77723-9842-4e8c-b4f2-e9ebf3f91f6c",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially when randomness is critical for security purposes. The `rand()` function is not suitable for cryptographic purposes because it produces predictable sequences of numbers if the seed is known or can be guessed. This can lead to vulnerabilities in applications where randomness is used for generating keys, tokens, or any other security-related data.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator (CSPRNG) instead of `rand()`. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate random numbers with better randomness properties.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand() %` with a more secure random number generation approach using the `<random>` library. Below is an example of how to replace `rand()` with a CSPRNG:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister engine\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define the range for random numbers\n    std::uniform_int_distribution<> dis(0, 99); // Example range [0, 99]\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code example, the following library is required:\n\n- `<random>`: This is part of the C++ Standard Library and does not require any additional dependencies beyond a standard C++ compiler that supports C++11 or later.\n\n### Relevant Links\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-f6c1b61f-b15a-4495-930b-778bea218972",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe use of `strncpy` in C++ can lead to vulnerabilities if not handled correctly. `strncpy` is often used to copy strings with a specified maximum length, but it does not guarantee null-termination of the destination string if the source string is longer than the specified length. This can lead to buffer overflows, data corruption, and undefined behavior, which are common security vulnerabilities.\n\n### General Mitigation Advice\n\n1. **Use Safer Alternatives**: Prefer using safer string handling functions like `std::string` in C++ which manage memory automatically and ensure null-termination.\n2. **Ensure Null-Termination**: If `strncpy` must be used, ensure that the destination buffer is explicitly null-terminated.\n3. **Bounds Checking**: Always perform bounds checking to ensure that the destination buffer is large enough to hold the source string and the null terminator.\n4. **Static Analysis Tools**: Use static analysis tools to detect unsafe string operations in your codebase.\n\n### Source Code Fix Recommendation\n\nGiven the specific vulnerability sink:\n\n```cpp\nstrncpy(vend_info, (ss.str()).c_str(), std::min(ss.str()\n```\n\nA safer approach using `std::string` would be:\n\n```cpp\n#include <string>\n#include <sstream>\n#include <algorithm>\n\n// Assuming vend_info is a char array and ss is a std::stringstream\nstd::string vend_info_str = ss.str();\nstd::size_t length = std::min(vend_info_str.size(), sizeof(vend_info) - 1);\nstd::copy_n(vend_info_str.c_str(), length, vend_info);\nvend_info[length] = '\\0'; // Ensure null-termination\n```\n\n### Library Dependencies\n\nTo execute the code example properly, the following standard C++ libraries are required:\n\n- `<string>`: For `std::string` operations.\n- `<sstream>`: For `std::stringstream` operations.\n- `<algorithm>`: For `std::min` and `std::copy_n`.\n\n### Relevant Resources\n\n- [OWASP C++ Secure Coding Practices](https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/)\n- [CWE-120: Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')](https://cwe.mitre.org/data/definitions/120.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS111237"
+                ]
+              }
+            },
+            {
+              "id": "glog-f65ff8b4-ac3a-4b45-96f2-301bbb123386",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially when randomness is critical for security purposes. The `rand()` function is not suitable for cryptographic purposes because it produces predictable sequences of numbers if the seed is known or can be guessed. This can lead to vulnerabilities in applications where randomness is used for generating keys, tokens, or any other security-related data.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator (CSPRNG) instead of `rand()`. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate random numbers with better randomness properties.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand() %` with a more secure random number generation approach using the `<random>` library. Below is an example of how to replace `rand()` with a CSPRNG:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister engine\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define the range for random numbers\n    std::uniform_int_distribution<> dis(0, 99); // Example range [0, 99]\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code example, the following library is required:\n\n- `<random>`: This is part of the C++ Standard Library and does not require any additional dependencies beyond a standard C++ compiler that supports C++11 or later.\n\n### Relevant Links\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-d1dcffc7-ec81-445f-820e-e2b6111186db",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially in security-sensitive applications. The `rand()` function is not suitable for cryptographic purposes because it generates predictable sequences of numbers if the seed is known. This predictability can be exploited by attackers to compromise the security of the application.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate random numbers more securely.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand()` with a more secure random number generator from the `<random>` library. Here is an example of how to do this:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister random number generator\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define a distribution range\n    std::uniform_int_distribution<> dis(1, 100);\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code example properly, the following library is required:\n\n- `<random>`: This library provides facilities for generating random numbers.\n\n### OWASP Resources\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-226cc4a7-fb45-407d-8800-5e04b1b7e1be",
+              "help": {
+                "text": "",
+                "markdown": "### Detected Issue with C Function (malloc) Vulnerability\n\nThe vulnerability arises from the improper use of the `malloc` function in C/C++ programming, specifically when allocating memory for an array of `bool` types. The expression `malloc(count * sizeof(bool))` can lead to several issues, such as integer overflow, insufficient memory allocation, or undefined behavior if `count` is not properly validated. This can result in buffer overflows, memory corruption, or application crashes.\n\n### General Mitigation Advice\n\n1. **Input Validation**: Ensure that the `count` variable is validated to prevent integer overflow. It should be checked to ensure it is a positive number and within a reasonable range.\n2. **Use Safer Functions**: Consider using safer alternatives like `calloc`, which initializes the allocated memory to zero, reducing the risk of using uninitialized memory.\n3. **Check Return Values**: Always check the return value of `malloc` to ensure that memory allocation was successful before using the allocated memory.\n4. **Use Smart Pointers**: In C++, prefer using smart pointers (e.g., `std::unique_ptr` or `std::vector`) to manage memory automatically and reduce the risk of memory leaks.\n\n### Source Code Fix Recommendation\n\n```cpp\n#include <iostream>\n#include <memory>\n#include <vector>\n\nint main() {\n    size_t count = 10; // Example count, should be validated\n    if (count > SIZE_MAX / sizeof(bool)) {\n        std::cerr << \"Count is too large, potential overflow.\" << std::endl;\n        return 1;\n    }\n\n    // Using std::vector for automatic memory management\n    std::vector<bool> boolArray(count);\n\n    // Alternatively, using unique_ptr\n    std::unique_ptr<bool[]> boolPtr(new bool[count]);\n\n    // Initialize memory if necessary\n    std::fill_n(boolPtr.get(), count, false);\n\n    // Use the allocated memory safely\n    for (size_t i = 0; i < count; ++i) {\n        boolArray[i] = true; // Example usage\n        boolPtr[i] = true;   // Example usage\n    }\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\n- `<iostream>`: For input and output operations.\n- `<memory>`: For smart pointers like `std::unique_ptr`.\n- `<vector>`: For using `std::vector` to manage dynamic arrays.\n\n### OWASP Resources\n\n- [OWASP Top Ten](https://owasp.org/www-project-top-ten/)\n- [OWASP Secure Coding Practices](https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-190: Integer Overflow or Wraparound](https://cwe.mitre.org/data/definitions/190.html)\n- [CWE-122: Heap-based Buffer Overflow](https://cwe.mitre.org/data/definitions/122.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS161085"
+                ]
+              }
+            },
+            {
+              "id": "glog-62c4d4c6-42b4-4285-8017-5257c3460f71",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe vulnerability \"Detected Use of Prohibited C Function (strncpy)\" in C++ arises from the use of the `strncpy` function, which is known for its potential to cause buffer overflows and other memory-related issues. The function does not guarantee null-termination of the destination string if the source string is longer than the specified number of characters. This can lead to undefined behavior, including memory corruption and security vulnerabilities.\n\n### General Mitigation Advice\n\n1. **Use Safer Alternatives**: Prefer using safer string handling functions like `strlcpy` or C++ standard library features such as `std::string` which manage memory automatically.\n2. **Ensure Null-Termination**: Always ensure that the destination buffer is null-terminated after using `strncpy`.\n3. **Buffer Size Management**: Ensure that the destination buffer is large enough to hold the source string and the null terminator.\n4. **Input Validation**: Validate input lengths before copying to prevent buffer overflows.\n\n### Source Code Fix Recommendation\n\nGiven the specific vulnerability sink:\n\n```cpp\nstrncpy(vend_info, (ss.str()).c_str(), fmin(ss.str()\n```\n\nA safer alternative using `std::string` would be:\n\n```cpp\n#include <string>\n#include <sstream>\n#include <algorithm> // for std::min\n\n// Assuming vend_info is a char array and ss is a std::stringstream\nstd::string temp = ss.str();\nsize_t length = std::min(temp.size(), sizeof(vend_info) - 1);\nstd::copy_n(temp.c_str(), length, vend_info);\nvend_info[length] = '\\0'; // Ensure null-termination\n```\n\n### Library Dependencies\n\nTo execute the code example properly, the following standard libraries are required:\n\n- `<string>`\n- `<sstream>`\n- `<algorithm>`\n\n### OWASP Resources\n\n- [OWASP C++ Secure Coding Practices](https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/)\n- [OWASP Top Ten](https://owasp.org/www-project-top-ten/)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-120: Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')](https://cwe.mitre.org/data/definitions/120.html)\n- [CWE-119: Improper Restriction of Operations within the Bounds of a Memory Buffer](https://cwe.mitre.org/data/definitions/119.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS111237"
+                ]
+              }
+            },
+            {
+              "id": "glog-dfc678d1-96c0-47e0-9abc-ab2aa8805f2b",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially when randomness is required for security purposes. The `rand()` function is not suitable for cryptographic purposes because it generates predictable sequences of numbers if the seed is known or can be guessed. This can lead to vulnerabilities such as predictable session IDs, tokens, or other security-sensitive values.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate more secure random numbers.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand()` with a more secure random number generator from the `<random>` library. Here's an example of how to do this:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister random number generator\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define a distribution range\n    std::uniform_int_distribution<> dis(0, 99);\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code properly, the following library is required:\n\n- `<random>`: This is part of the C++ Standard Library and does not require any additional dependencies beyond a standard C++11 or later compiler.\n\n### Relevant OWASP Resources\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-5ceda65f-fac1-4907-b209-b22c20a9bf87",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially when randomness is required for security purposes. The `rand()` function is not suitable for cryptographic purposes because it generates predictable sequences of numbers if the seed is known or can be guessed. This can lead to vulnerabilities such as predictable session IDs, tokens, or other security-sensitive values.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate more secure random numbers.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand()` with a more secure random number generator from the `<random>` library. Here's an example of how to do this:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister random number generator\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define a distribution range\n    std::uniform_int_distribution<> dis(0, 99);\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code properly, the following library is required:\n\n- `<random>`: This is part of the C++ Standard Library and does not require any additional dependencies beyond a standard C++11 or later compiler.\n\n### Relevant OWASP Resources\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-90787adb-4d1b-4767-a7fc-b83e2e529b74",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially in security-sensitive applications. The `rand()` function is not suitable for cryptographic purposes because it generates predictable sequences of numbers if the seed is known. This predictability can be exploited by attackers to compromise the security of the application.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate random numbers more securely.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand()` with a more secure random number generator from the `<random>` library. Here is an example of how to do this:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister random number generator\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define a distribution range\n    std::uniform_int_distribution<> dis(1, 100);\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code example properly, the following library is required:\n\n- `<random>`: This library provides facilities for generating random numbers.\n\n### OWASP Resources\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-f35439da-1e1e-475a-b6cd-9fc87f215084",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially when randomness is required for security purposes. The `rand()` function is not suitable for cryptographic purposes because it generates predictable sequences of numbers if the seed is known or can be guessed. This can lead to vulnerabilities such as predictable session IDs, tokens, or other security-sensitive values.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate more secure random numbers.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand()` with a more secure random number generator from the `<random>` library. Here's an example of how to do this:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister random number generator\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define a distribution range\n    std::uniform_int_distribution<> dis(0, 99);\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code properly, the following library is required:\n\n- `<random>`: This is part of the C++ Standard Library and does not require any additional dependencies beyond a standard C++11 or later compiler.\n\n### Relevant OWASP Resources\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-cd8aa00a-d2e5-469e-b78f-afd0b83b3cbd",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially in security-sensitive applications. The `rand()` function is not suitable for cryptographic purposes because it generates predictable sequences of numbers if the seed is known. This predictability can be exploited by attackers to compromise the security of the application.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate random numbers more securely.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand()` with a more secure random number generator from the `<random>` library. Here is an example of how to do this:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister random number generator\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define a distribution range\n    std::uniform_int_distribution<> dis(1, 100);\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code example properly, the following library is required:\n\n- `<random>`: This library provides facilities for generating random numbers.\n\n### OWASP Resources\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-939ebec5-109e-4aed-846b-95de496f935b",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nIn C++ programming, using weak or non-cryptographic random number generators, such as the `rand()` function, can lead to vulnerabilities, especially in security-sensitive applications. The `rand()` function is not suitable for cryptographic purposes because it generates predictable sequences of numbers if the seed is known. This predictability can be exploited by attackers to compromise the security of the application.\n\n### General Mitigation Advice\n\nTo mitigate this vulnerability, use a cryptographically secure random number generator. In C++, the `<random>` library provides better alternatives, such as `std::random_device` and `std::mt19937`, which can be used to generate random numbers more securely.\n\n### Source Code Fix Recommendation\n\nReplace the use of `rand()` with a more secure random number generator from the `<random>` library. Here is an example of how to do this:\n\n```cpp\n#include <iostream>\n#include <random>\n\nint main() {\n    // Create a random device and a Mersenne Twister random number generator\n    std::random_device rd;\n    std::mt19937 gen(rd());\n\n    // Define a distribution range\n    std::uniform_int_distribution<> dis(1, 100);\n\n    // Generate a random number\n    int random_number = dis(gen);\n\n    std::cout << \"Secure random number: \" << random_number << std::endl;\n\n    return 0;\n}\n```\n\n### Library Dependencies\n\nTo execute the above code example properly, the following library is required:\n\n- `<random>`: This library provides facilities for generating random numbers.\n\n### OWASP Resources\n\n- [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)](https://cwe.mitre.org/data/definitions/338.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS148264"
+                ]
+              }
+            },
+            {
+              "id": "glog-6c9509ba-cebe-488a-aae6-d3272ed706ce",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe \"Detected Use of Prohibited C Function (strncpy)\" vulnerability arises when the `strncpy` function is used improperly in C++ programming. This function is often used to copy strings, but it can lead to buffer overflows or data truncation if not handled correctly. The function does not guarantee null-termination of the destination string if the source string is longer than the specified size, which can lead to undefined behavior and potential security vulnerabilities.\n\n### General Mitigation Advice\n\n1. **Use Safer Alternatives**: Prefer using safer string handling functions like `strlcpy` or C++ standard library functions such as `std::string::copy` or `std::copy`.\n2. **Ensure Null-Termination**: Always ensure that the destination buffer is null-terminated after using `strncpy`.\n3. **Buffer Size Management**: Ensure that the destination buffer is large enough to hold the source string and the null terminator.\n4. **Input Validation**: Validate input sizes and lengths before performing copy operations to prevent buffer overflows.\n\n### Source Code Fix Recommendation\n\nGiven the specific vulnerability sink:\n\n```cpp\nstrncpy(buffer, msg.c_str(), size);\n```\n\nA safer alternative using `std::copy` would be:\n\n```cpp\n#include <algorithm>\n#include <cstring>\n#include <string>\n\n// Assuming buffer is a char array and size is the maximum size of the buffer\nstd::fill(buffer, buffer + size, '\\0'); // Ensure buffer is zeroed out\nstd::copy(msg.c_str(), msg.c_str() + std::min(msg.size(), size - 1), buffer);\nbuffer[size - 1] = '\\0'; // Ensure null-termination\n```\n\n### Library Dependencies\n\nTo execute the code example properly, the following standard library headers are required:\n\n- `<algorithm>`: For `std::copy` and `std::min`.\n- `<cstring>`: For C-style string operations.\n- `<string>`: For `std::string`.\n\n### Relevant Resources\n\n- [OWASP Secure Coding Practices - Quick Reference Guide](https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/)\n- [OWASP Top Ten](https://owasp.org/www-project-top-ten/)\n\n### Common Weakness Enumeration\n\n- [CWE-120: Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')](https://cwe.mitre.org/data/definitions/120.html)\n- [CWE-119: Improper Restriction of Operations within the Bounds of a Memory Buffer](https://cwe.mitre.org/data/definitions/119.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS111237"
+                ]
+              }
+            }
+          ],
+          "language": "en-US",
+          "contents": [
+            "localizedData",
+            "nonLocalizedData"
+          ],
+          "isComprehensive": false
+        }
+      },
+      "language": "en-US",
+      "results": [
+        {
+          "ruleId": "glog-e3021895-fed5-482b-82d8-b3f63aab940e",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Problematic C function detected (memcpy)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Private/Au/Exception.hh"
+                },
+                "region": {
+                  "startLine": 84,
+                  "startColumn": 10,
+                  "endLine": 84,
+                  "endColumn": 44,
+                  "charOffset": 2759,
+                  "charLength": 34,
+                  "snippet": {
+                    "text": "memcpy(cStr, s.c_str(), s.length()",
+                    "rendered": {
+                      "text": "memcpy(cStr, s.c_str(), s.length()",
+                      "markdown": "`memcpy(cStr, s.c_str(), s.length()`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "Library/Private/Au/Exception.hh"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 2759,
+                        "charLength": 34
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(cStr, <size of cStr>,  s.c_str(),  s.length()"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-bcb8fde9-f139-4106-818a-0b736852957c",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningTest.hh"
+                },
+                "region": {
+                  "startLine": 334,
+                  "startColumn": 25,
+                  "endLine": 334,
+                  "endColumn": 33,
+                  "charOffset": 11038,
+                  "charLength": 8,
+                  "snippet": {
+                    "text": "rand() %",
+                    "rendered": {
+                      "text": "rand() %",
+                      "markdown": "`rand() %`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-d63b3fa2-4d4a-4058-9348-19181fe96e16",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Starting a process with a shell, possible injection detected, security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/copyrightcheck.py"
+                },
+                "region": {
+                  "startLine": 37,
+                  "startColumn": 13,
+                  "endLine": 37,
+                  "endColumn": 26,
+                  "snippet": {
+                    "text": "    files = os.popen(cmd).read()\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 36,
+                  "endLine": 38,
+                  "snippet": {
+                    "text": "    cmd = \"git diff --cached --name-only  | sort -u\"\n    files = os.popen(cmd).read()\n    return files\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "HIGH",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-fb1db9c5-bc3a-4827-82b3-1b6cacd94f00",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningTest.hh"
+                },
+                "region": {
+                  "startLine": 325,
+                  "startColumn": 16,
+                  "endLine": 325,
+                  "endColumn": 24,
+                  "charOffset": 10583,
+                  "charLength": 8,
+                  "snippet": {
+                    "text": "rand() %",
+                    "rendered": {
+                      "text": "rand() %",
+                      "markdown": "`rand() %`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-5e41892f-034e-451a-9d58-0f2efbedac8d",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningTest.hh"
+                },
+                "region": {
+                  "startLine": 325,
+                  "startColumn": 16,
+                  "endLine": 325,
+                  "endColumn": 21,
+                  "charOffset": 10583,
+                  "charLength": 5,
+                  "snippet": {
+                    "text": "rand(",
+                    "rendered": {
+                      "text": "rand(",
+                      "markdown": "`rand(`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-727b3f1a-120c-4279-b5fa-020d71264f08",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningTest.hh"
+                },
+                "region": {
+                  "startLine": 314,
+                  "startColumn": 16,
+                  "endLine": 314,
+                  "endColumn": 21,
+                  "charOffset": 10093,
+                  "charLength": 5,
+                  "snippet": {
+                    "text": "rand(",
+                    "rendered": {
+                      "text": "rand(",
+                      "markdown": "`rand(`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-4074c00e-0e2e-4317-a30c-0d496e694ec2",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningTest.hh"
+                },
+                "region": {
+                  "startLine": 314,
+                  "startColumn": 16,
+                  "endLine": 314,
+                  "endColumn": 24,
+                  "charOffset": 10093,
+                  "charLength": 8,
+                  "snippet": {
+                    "text": "rand() %",
+                    "rendered": {
+                      "text": "rand() %",
+                      "markdown": "`rand() %`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-ff6e5ed6-e709-460d-ac91-2771d00d1cbe",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningTest.hh"
+                },
+                "region": {
+                  "startLine": 292,
+                  "startColumn": 25,
+                  "endLine": 292,
+                  "endColumn": 30,
+                  "charOffset": 9347,
+                  "charLength": 5,
+                  "snippet": {
+                    "text": "rand(",
+                    "rendered": {
+                      "text": "rand(",
+                      "markdown": "`rand(`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-17a77723-9842-4e8c-b4f2-e9ebf3f91f6c",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningTest.hh"
+                },
+                "region": {
+                  "startLine": 78,
+                  "startColumn": 24,
+                  "endLine": 78,
+                  "endColumn": 32,
+                  "charOffset": 2668,
+                  "charLength": 8,
+                  "snippet": {
+                    "text": "rand() %",
+                    "rendered": {
+                      "text": "rand() %",
+                      "markdown": "`rand() %`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-f6c1b61f-b15a-4495-930b-778bea218972",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Banned C function detected (strncpy)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Capi/cpuid.cc"
+                },
+                "region": {
+                  "startLine": 75,
+                  "startColumn": 4,
+                  "endLine": 75,
+                  "endColumn": 60,
+                  "charOffset": 2667,
+                  "charLength": 56,
+                  "snippet": {
+                    "text": "strncpy(vend_info, (ss.str()).c_str(), std::min(ss.str()",
+                    "rendered": {
+                      "text": "strncpy(vend_info, (ss.str()).c_str(), std::min(ss.str()",
+                      "markdown": "`strncpy(vend_info, (ss.str()).c_str(), std::min(ss.str()`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "strncpy is dangerous, as if the source contains 'n' or more characters, it will not null terminate the destination."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "Library/Capi/cpuid.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 2667,
+                        "charLength": 56
+                      },
+                      "insertedContent": {
+                        "text": "strcpy_s(vend_info,  std::min(ss.str(,  (ss.str()).c_str())"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "description": {
+                "text": "strncpy is dangerous, as if the source contains 'n' or more characters, it will not null terminate the destination."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "Library/Capi/cpuid.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 2667,
+                        "charLength": 56
+                      },
+                      "insertedContent": {
+                        "text": "strlcpy(vend_info,  (ss.str()).c_str(),  std::min(ss.str()"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.BannedFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-f65ff8b4-ac3a-4b45-96f2-301bbb123386",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningTest.hh"
+                },
+                "region": {
+                  "startLine": 292,
+                  "startColumn": 25,
+                  "endLine": 292,
+                  "endColumn": 33,
+                  "charOffset": 9347,
+                  "charLength": 8,
+                  "snippet": {
+                    "text": "rand() %",
+                    "rendered": {
+                      "text": "rand() %",
+                      "markdown": "`rand() %`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-d1dcffc7-ec81-445f-820e-e2b6111186db",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningTest.hh"
+                },
+                "region": {
+                  "startLine": 78,
+                  "startColumn": 24,
+                  "endLine": 78,
+                  "endColumn": 29,
+                  "charOffset": 2668,
+                  "charLength": 5,
+                  "snippet": {
+                    "text": "rand(",
+                    "rendered": {
+                      "text": "rand(",
+                      "markdown": "`rand(`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-226cc4a7-fb45-407d-8800-5e04b1b7e1be",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Problematic C function detected (malloc)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Capi/cpuid.cc"
+                },
+                "region": {
+                  "startLine": 220,
+                  "startColumn": 43,
+                  "endLine": 220,
+                  "endColumn": 70,
+                  "charOffset": 5403,
+                  "charLength": 27,
+                  "snippet": {
+                    "text": "malloc(count * sizeof(bool)",
+                    "rendered": {
+                      "text": "malloc(count * sizeof(bool)",
+                      "markdown": "`malloc(count * sizeof(bool)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "If the value provided to malloc is the result of unsafe integer math, it can result in an exploitable condition. "
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "Library/Capi/cpuid.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 5403,
+                        "charLength": 27
+                      },
+                      "insertedContent": {
+                        "text": "calloc(<number of elements>, <size of each element>)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-62c4d4c6-42b4-4285-8017-5257c3460f71",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Banned C function detected (strncpy)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Capi/cpuid.cc"
+                },
+                "region": {
+                  "startLine": 73,
+                  "startColumn": 4,
+                  "endLine": 73,
+                  "endColumn": 56,
+                  "charOffset": 2588,
+                  "charLength": 52,
+                  "snippet": {
+                    "text": "strncpy(vend_info, (ss.str()).c_str(), fmin(ss.str()",
+                    "rendered": {
+                      "text": "strncpy(vend_info, (ss.str()).c_str(), fmin(ss.str()",
+                      "markdown": "`strncpy(vend_info, (ss.str()).c_str(), fmin(ss.str()`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "strncpy is dangerous, as if the source contains 'n' or more characters, it will not null terminate the destination."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "Library/Capi/cpuid.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 2588,
+                        "charLength": 52
+                      },
+                      "insertedContent": {
+                        "text": "strcpy_s(vend_info,  fmin(ss.str(,  (ss.str()).c_str())"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "description": {
+                "text": "strncpy is dangerous, as if the source contains 'n' or more characters, it will not null terminate the destination."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "Library/Capi/cpuid.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 2588,
+                        "charLength": 52
+                      },
+                      "insertedContent": {
+                        "text": "strlcpy(vend_info,  (ss.str()).c_str(),  fmin(ss.str()"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.BannedFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-dfc678d1-96c0-47e0-9abc-ab2aa8805f2b",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningCapiTest.cc"
+                },
+                "region": {
+                  "startLine": 130,
+                  "startColumn": 33,
+                  "endLine": 131,
+                  "endColumn": 34,
+                  "charOffset": 5019,
+                  "charLength": 41,
+                  "snippet": {
+                    "text": "rand()\n                                 %",
+                    "rendered": {
+                      "text": "rand()\n                                 %",
+                      "markdown": "`rand()\n                                 %`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-5ceda65f-fac1-4907-b209-b22c20a9bf87",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningCapiTest.cc"
+                },
+                "region": {
+                  "startLine": 104,
+                  "startColumn": 33,
+                  "endLine": 105,
+                  "endColumn": 34,
+                  "charOffset": 4013,
+                  "charLength": 41,
+                  "snippet": {
+                    "text": "rand()\n                                 %",
+                    "rendered": {
+                      "text": "rand()\n                                 %",
+                      "markdown": "`rand()\n                                 %`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-90787adb-4d1b-4767-a7fc-b83e2e529b74",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningCapiTest.cc"
+                },
+                "region": {
+                  "startLine": 130,
+                  "startColumn": 33,
+                  "endLine": 130,
+                  "endColumn": 38,
+                  "charOffset": 5019,
+                  "charLength": 5,
+                  "snippet": {
+                    "text": "rand(",
+                    "rendered": {
+                      "text": "rand(",
+                      "markdown": "`rand(`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-f35439da-1e1e-475a-b6cd-9fc87f215084",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningCapiTest.cc"
+                },
+                "region": {
+                  "startLine": 70,
+                  "startColumn": 33,
+                  "endLine": 71,
+                  "endColumn": 34,
+                  "charOffset": 2774,
+                  "charLength": 41,
+                  "snippet": {
+                    "text": "rand()\n                                 %",
+                    "rendered": {
+                      "text": "rand()\n                                 %",
+                      "markdown": "`rand()\n                                 %`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-cd8aa00a-d2e5-469e-b78f-afd0b83b3cbd",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningCapiTest.cc"
+                },
+                "region": {
+                  "startLine": 104,
+                  "startColumn": 33,
+                  "endLine": 104,
+                  "endColumn": 38,
+                  "charOffset": 4013,
+                  "charLength": 5,
+                  "snippet": {
+                    "text": "rand(",
+                    "rendered": {
+                      "text": "rand(",
+                      "markdown": "`rand(`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-939ebec5-109e-4aed-846b-95de496f935b",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Do not use weak/non-cryptographic random number generators"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/ThreadPinning/ThreadPinningCapiTest.cc"
+                },
+                "region": {
+                  "startLine": 70,
+                  "startColumn": 33,
+                  "endLine": 70,
+                  "endColumn": 38,
+                  "charOffset": 2774,
+                  "charLength": 5,
+                  "snippet": {
+                    "text": "rand(",
+                    "rendered": {
+                      "text": "rand(",
+                      "markdown": "`rand(`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.PRNG.Weak"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-6c9509ba-cebe-488a-aae6-d3272ed706ce",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "Banned C function detected (strncpy)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Library/Tests/Status/Lib/capi/CalculatorCapi.cc"
+                },
+                "region": {
+                  "startLine": 137,
+                  "startColumn": 8,
+                  "endLine": 137,
+                  "endColumn": 42,
+                  "charOffset": 5247,
+                  "charLength": 34,
+                  "snippet": {
+                    "text": "strncpy(buffer, msg.c_str(), size)",
+                    "rendered": {
+                      "text": "strncpy(buffer, msg.c_str(), size)",
+                      "markdown": "`strncpy(buffer, msg.c_str(), size)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "strncpy is dangerous, as if the source contains 'n' or more characters, it will not null terminate the destination."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "Library/Tests/Status/Lib/capi/CalculatorCapi.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 5247,
+                        "charLength": 34
+                      },
+                      "insertedContent": {
+                        "text": "strcpy_s(buffer,  size,  msg.c_str())"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "description": {
+                "text": "strncpy is dangerous, as if the source contains 'n' or more characters, it will not null terminate the destination."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "Library/Tests/Status/Lib/capi/CalculatorCapi.cc"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 5247,
+                        "charLength": 34
+                      },
+                      "insertedContent": {
+                        "text": "strlcpy(buffer,  msg.c_str(),  size)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.BannedFunction"
+            ]
+          }
+        }
+      ],
+      "newlineSequences": [
+        "\r\n",
+        "\n"
+      ]
+    }
+  ]
+}
